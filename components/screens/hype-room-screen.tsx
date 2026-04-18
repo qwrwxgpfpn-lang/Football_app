@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { ArrowLeft, Send, Smile, Users, Flame, Zap, Trophy, Heart, ThumbsUp, Target, TrendingUp, ChevronDown, Star } from "lucide-react"
+import { ArrowLeft, Send, Smile, Users, Flame, Zap, Trophy, Heart, ThumbsUp, Target, TrendingUp, ChevronDown, Star, Crown, Lock, Unlock, Settings, Check, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -19,16 +19,60 @@ const gameInfo = {
   type: "5-a-side",
 }
 
-const teamA = [
-  { id: 1, name: "Marcus", avatar: "https://i.pravatar.cc/100?img=1", position: "GK", rating: 87 },
-  { id: 2, name: "Sarah", avatar: "https://i.pravatar.cc/100?img=5", position: "DEF", rating: 82 },
+// Available formations for 5-a-side
+const formations = [
+  { id: "1-2-2", label: "1-2-2", positions: [
+    { x: 50, y: 90, label: "GK" },
+    { x: 25, y: 60, label: "DEF" },
+    { x: 75, y: 60, label: "DEF" },
+    { x: 25, y: 30, label: "FWD" },
+    { x: 75, y: 30, label: "FWD" },
+  ]},
+  { id: "2-1-2", label: "2-1-2", positions: [
+    { x: 50, y: 90, label: "GK" },
+    { x: 30, y: 65, label: "DEF" },
+    { x: 70, y: 65, label: "DEF" },
+    { x: 50, y: 45, label: "MID" },
+    { x: 30, y: 25, label: "FWD" },
+    { x: 70, y: 25, label: "FWD" },
+  ]},
+  { id: "1-1-2-1", label: "1-1-2-1", positions: [
+    { x: 50, y: 90, label: "GK" },
+    { x: 50, y: 70, label: "DEF" },
+    { x: 30, y: 45, label: "MID" },
+    { x: 70, y: 45, label: "MID" },
+    { x: 50, y: 20, label: "FWD" },
+  ]},
+  { id: "2-2", label: "2-2 (No GK)", positions: [
+    { x: 30, y: 75, label: "DEF" },
+    { x: 70, y: 75, label: "DEF" },
+    { x: 30, y: 35, label: "FWD" },
+    { x: 70, y: 35, label: "FWD" },
+  ]},
+]
+
+interface Player {
+  id: number
+  name: string
+  avatar: string
+  position: string
+  rating: number
+  isYou?: boolean
+  isEmpty?: boolean
+  isCaptain?: boolean
+  canBeCaptain?: boolean
+}
+
+const initialTeamA: Player[] = [
+  { id: 1, name: "Marcus", avatar: "https://i.pravatar.cc/100?img=1", position: "GK", rating: 87, isCaptain: true },
+  { id: 2, name: "Sarah", avatar: "https://i.pravatar.cc/100?img=5", position: "DEF", rating: 82, canBeCaptain: true },
   { id: 3, name: "James", avatar: "https://i.pravatar.cc/100?img=3", position: "MID", rating: 79 },
   { id: 4, name: "Emma", avatar: "https://i.pravatar.cc/100?img=9", position: "FWD", rating: 85 },
   { id: 5, name: "You", avatar: "https://i.pravatar.cc/100?img=8", position: "MID", rating: 84, isYou: true },
 ]
 
-const teamB = [
-  { id: 6, name: "David", avatar: "https://i.pravatar.cc/100?img=11", position: "GK", rating: 84 },
+const initialTeamB: Player[] = [
+  { id: 6, name: "David", avatar: "https://i.pravatar.cc/100?img=11", position: "GK", rating: 84, isCaptain: true },
   { id: 7, name: "Lisa", avatar: "https://i.pravatar.cc/100?img=23", position: "DEF", rating: 78 },
   { id: 8, name: "Alex", avatar: "https://i.pravatar.cc/100?img=15", position: "MID", rating: 81 },
   { id: 9, name: "TBD", avatar: "", position: "MID", rating: 0, isEmpty: true },
@@ -36,7 +80,7 @@ const teamB = [
 ]
 
 const initialMessages = [
-  { id: 1, user: "Marcus", avatar: "https://i.pravatar.cc/100?img=1", text: "Let's gooo! Ready to smash it tonight", time: "2h ago", type: "chat" as const },
+  { id: 1, user: "Marcus", avatar: "https://i.pravatar.cc/100?img=1", text: "Let's gooo! Ready to smash it tonight", time: "2h ago", type: "chat" as const, isCaptain: true },
   { id: 2, user: "Sarah", avatar: "https://i.pravatar.cc/100?img=5", text: "Defence is locked in", time: "1h ago", type: "chat" as const },
   { id: 3, user: "James", avatar: "https://i.pravatar.cc/100?img=3", text: "Anyone need a lift?", time: "45m ago", type: "chat" as const },
   { id: 4, user: "System", avatar: "", text: "Marcus predicted: Team A 3 - 2 Team B", time: "30m ago", type: "prediction" as const },
@@ -46,7 +90,7 @@ const initialMessages = [
 ]
 
 const predictions = [
-  { userId: 1, name: "Marcus", avatar: "https://i.pravatar.cc/100?img=1", teamAScore: 3, teamBScore: 2, mvp: "Emma" },
+  { userId: 1, name: "Marcus", avatar: "https://i.pravatar.cc/100?img=1", teamAScore: 3, teamBScore: 2, mvp: "Emma", isCaptain: true },
   { userId: 2, name: "Sarah", avatar: "https://i.pravatar.cc/100?img=5", teamAScore: 2, teamBScore: 1, mvp: "James" },
   { userId: 3, name: "Alex", avatar: "https://i.pravatar.cc/100?img=15", teamAScore: 1, teamBScore: 4, mvp: "David" },
 ]
@@ -59,16 +103,7 @@ const quickReactions = [
   { id: 5, icon: Zap, label: "Hype", count: 12 },
 ]
 
-const positions = [
-  { x: 50, y: 90, label: "GK" },
-  { x: 25, y: 70, label: "DEF" },
-  { x: 75, y: 70, label: "DEF" },
-  { x: 25, y: 45, label: "MID" },
-  { x: 75, y: 45, label: "MID" },
-  { x: 50, y: 20, label: "FWD" },
-]
-
-const allPlayers = [...teamA, ...teamB.filter(p => !p.isEmpty)]
+const emojis = ["⚽", "🔥", "💪", "👏", "🎯", "⭐", "🏆", "💯", "🙌", "😤", "🤝", "👊"]
 
 export function HypeRoomScreen({ onBack }: HypeRoomScreenProps) {
   const [activeTab, setActiveTab] = useState<"lineup" | "chat" | "predictions">("chat")
@@ -78,8 +113,21 @@ export function HypeRoomScreen({ onBack }: HypeRoomScreenProps) {
   const [myPrediction, setMyPrediction] = useState({ teamAScore: 0, teamBScore: 0, mvpId: 0 })
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
-
-  const emojis = ["⚽", "🔥", "💪", "👏", "🎯", "⭐", "🏆", "💯", "🙌", "😤", "🤝", "👊"]
+  
+  // Captain and lineup state
+  const [teamA, setTeamA] = useState(initialTeamA)
+  const [teamB, setTeamB] = useState(initialTeamB)
+  const [selectedFormation, setSelectedFormation] = useState(formations[0])
+  const [isLineupLocked, setIsLineupLocked] = useState(false)
+  const [showFormationPicker, setShowFormationPicker] = useState(false)
+  const [showCaptainManager, setShowCaptainManager] = useState(false)
+  const [activeTeam, setActiveTeam] = useState<"A" | "B">("A")
+  const [draggedPlayer, setDraggedPlayer] = useState<Player | null>(null)
+  
+  // For demo, assume current user is captain
+  const isCurrentUserCaptain = true
+  
+  const allPlayers = [...teamA, ...teamB.filter(p => !p.isEmpty)]
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -121,6 +169,73 @@ export function HypeRoomScreen({ onBack }: HypeRoomScreenProps) {
     setShowEmojiPicker(false)
   }
 
+  const handleLockLineup = () => {
+    setIsLineupLocked(true)
+    const systemMessage = {
+      id: messages.length + 1,
+      user: "System",
+      avatar: "",
+      text: `🔒 Team lineups have been locked by the captain! Formation: ${selectedFormation.label}`,
+      time: "Just now",
+      type: "system" as const,
+    }
+    setMessages([...messages, systemMessage])
+  }
+
+  const handleUnlockLineup = () => {
+    setIsLineupLocked(false)
+  }
+
+  const handleToggleCaptain = (playerId: number, team: "A" | "B") => {
+    if (team === "A") {
+      setTeamA(prev => prev.map(p => ({
+        ...p,
+        canBeCaptain: p.id === playerId ? !p.canBeCaptain : p.canBeCaptain
+      })))
+    } else {
+      setTeamB(prev => prev.map(p => ({
+        ...p,
+        canBeCaptain: p.id === playerId ? !p.canBeCaptain : p.canBeCaptain
+      })))
+    }
+  }
+
+  const handleMakeCaptain = (playerId: number, team: "A" | "B") => {
+    if (team === "A") {
+      setTeamA(prev => prev.map(p => ({
+        ...p,
+        isCaptain: p.id === playerId
+      })))
+    } else {
+      setTeamB(prev => prev.map(p => ({
+        ...p,
+        isCaptain: p.id === playerId
+      })))
+    }
+  }
+
+  const handleSwapPlayers = (player1: Player, player2: Player) => {
+    if (isLineupLocked) return
+    
+    const updateTeam = (team: Player[], p1: Player, p2: Player) => {
+      return team.map(p => {
+        if (p.id === p1.id) return { ...p2, position: p1.position }
+        if (p.id === p2.id) return { ...p1, position: p2.position }
+        return p
+      })
+    }
+    
+    // Check which teams the players belong to
+    const p1InA = teamA.find(p => p.id === player1.id)
+    const p2InA = teamA.find(p => p.id === player2.id)
+    
+    if (p1InA && p2InA) {
+      setTeamA(updateTeam(teamA, player1, player2))
+    } else if (!p1InA && !p2InA) {
+      setTeamB(updateTeam(teamB, player1, player2))
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -132,9 +247,17 @@ export function HypeRoomScreen({ onBack }: HypeRoomScreenProps) {
           <h1 className="font-semibold">{gameInfo.venue}</h1>
           <p className="text-sm text-muted-foreground">{gameInfo.time}</p>
         </div>
-        <div className="flex items-center gap-1 bg-primary/20 text-primary px-3 py-1.5 rounded-full">
-          <Users className="w-4 h-4" />
-          <span className="text-sm font-medium">{allPlayers.length}/10</span>
+        <div className="flex items-center gap-2">
+          {isLineupLocked && (
+            <div className="flex items-center gap-1 bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded-full">
+              <Lock className="w-3 h-3" />
+              <span className="text-xs font-medium">Locked</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1 bg-primary/20 text-primary px-3 py-1.5 rounded-full">
+            <Users className="w-4 h-4" />
+            <span className="text-sm font-medium">{allPlayers.length}/10</span>
+          </div>
         </div>
       </div>
 
@@ -196,22 +319,36 @@ export function HypeRoomScreen({ onBack }: HypeRoomScreenProps) {
             {messages.map((msg) => (
               <div key={msg.id} className={cn(
                 "flex items-start gap-3",
-                msg.type === "prediction" && "justify-center"
+                msg.type === "prediction" || msg.type === "system" ? "justify-center" : ""
               )}>
                 {msg.type === "prediction" ? (
                   <div className="bg-gradient-to-r from-primary/20 to-yellow-500/20 rounded-xl px-4 py-2 flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-primary" />
                     <span className="text-sm font-medium">{msg.text}</span>
                   </div>
+                ) : msg.type === "system" ? (
+                  <div className="bg-secondary/50 rounded-xl px-4 py-2 flex items-center gap-2">
+                    <span className="text-sm">{msg.text}</span>
+                  </div>
                 ) : (
                   <>
-                    <Avatar className="h-10 w-10 border-2 border-border">
-                      <AvatarImage src={msg.avatar} />
-                      <AvatarFallback className="bg-secondary">{msg.user[0]}</AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                      <Avatar className="h-10 w-10 border-2 border-border">
+                        <AvatarImage src={msg.avatar} />
+                        <AvatarFallback className="bg-secondary">{msg.user[0]}</AvatarFallback>
+                      </Avatar>
+                      {msg.isCaptain && (
+                        <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-0.5">
+                          <Crown className="w-3 h-3 text-black" />
+                        </div>
+                      )}
+                    </div>
                     <div className="flex-1 max-w-[80%]">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm font-semibold">{msg.user}</span>
+                        {msg.isCaptain && (
+                          <span className="text-[10px] bg-yellow-500/20 text-yellow-500 px-1.5 py-0.5 rounded font-medium">CAPTAIN</span>
+                        )}
                         <span className="text-xs text-muted-foreground">{msg.time}</span>
                       </div>
                       <div className={cn(
@@ -424,7 +561,12 @@ export function HypeRoomScreen({ onBack }: HypeRoomScreenProps) {
                         <AvatarImage src={pred.avatar} />
                         <AvatarFallback>{pred.name[0]}</AvatarFallback>
                       </Avatar>
-                      {index === 0 && (
+                      {pred.isCaptain && (
+                        <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-0.5">
+                          <Crown className="w-3 h-3 text-black" />
+                        </div>
+                      )}
+                      {index === 0 && !pred.isCaptain && (
                         <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-1">
                           <Trophy className="w-3 h-3 text-black" />
                         </div>
@@ -463,9 +605,194 @@ export function HypeRoomScreen({ onBack }: HypeRoomScreenProps) {
       )}
 
       {activeTab === "lineup" && (
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Captain Controls */}
+          {isCurrentUserCaptain && (
+            <Card className="p-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-yellow-500 rounded-xl">
+                  <Crown className="w-5 h-5 text-black" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold">Captain Controls</h3>
+                  <p className="text-xs text-muted-foreground">You can set formations and lock the lineup</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-2">
+                {/* Formation Picker */}
+                <div className="relative flex-1">
+                  <button
+                    onClick={() => setShowFormationPicker(!showFormationPicker)}
+                    disabled={isLineupLocked}
+                    className={cn(
+                      "w-full flex items-center justify-between px-4 py-2.5 bg-card rounded-xl transition-colors",
+                      isLineupLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-card/80"
+                    )}
+                  >
+                    <span className="font-medium">{selectedFormation.label}</span>
+                    <ChevronDown className={cn("w-4 h-4 transition-transform", showFormationPicker && "rotate-180")} />
+                  </button>
+                  
+                  {showFormationPicker && !isLineupLocked && (
+                    <div className="absolute top-full mt-2 left-0 right-0 bg-card rounded-xl shadow-xl border border-border z-20 overflow-hidden">
+                      {formations.map((formation) => (
+                        <button
+                          key={formation.id}
+                          onClick={() => {
+                            setSelectedFormation(formation)
+                            setShowFormationPicker(false)
+                          }}
+                          className={cn(
+                            "w-full px-4 py-3 text-left hover:bg-secondary transition-colors flex items-center justify-between",
+                            selectedFormation.id === formation.id && "bg-primary/10 text-primary"
+                          )}
+                        >
+                          <span className="font-medium">{formation.label}</span>
+                          {selectedFormation.id === formation.id && <Check className="w-4 h-4" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Captain Manager */}
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCaptainManager(!showCaptainManager)}
+                  className="px-3"
+                >
+                  <Settings className="w-4 h-4" />
+                </Button>
+                
+                {/* Lock/Unlock Button */}
+                {isLineupLocked ? (
+                  <Button
+                    onClick={handleUnlockLineup}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Unlock className="w-4 h-4" />
+                    Unlock
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleLockLineup}
+                    className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-black"
+                  >
+                    <Lock className="w-4 h-4" />
+                    Lock In
+                  </Button>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* Captain Manager Modal */}
+          {showCaptainManager && (
+            <Card className="p-4 bg-card border-none">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-primary" />
+                  Manage Captains
+                </h3>
+                <button onClick={() => setShowCaptainManager(false)} className="text-muted-foreground">
+                  <ChevronDown className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">Enable players to have captain privileges or transfer captain role.</p>
+              
+              <div className="space-y-2">
+                {allPlayers.map((player) => {
+                  const team = teamA.find(p => p.id === player.id) ? "A" : "B"
+                  return (
+                    <div key={player.id} className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          <Avatar className="h-10 w-10 border-2 border-border">
+                            <AvatarImage src={player.avatar} />
+                            <AvatarFallback>{player.name[0]}</AvatarFallback>
+                          </Avatar>
+                          {player.isCaptain && (
+                            <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-0.5">
+                              <Crown className="w-3 h-3 text-black" />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">{player.name}</p>
+                          <p className="text-xs text-muted-foreground">Team {team}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {!player.isCaptain && (
+                          <>
+                            <button
+                              onClick={() => handleToggleCaptain(player.id, team)}
+                              className={cn(
+                                "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                                player.canBeCaptain
+                                  ? "bg-primary/20 text-primary"
+                                  : "bg-secondary text-muted-foreground"
+                              )}
+                            >
+                              {player.canBeCaptain ? "Can Captain" : "Enable"}
+                            </button>
+                            <button
+                              onClick={() => handleMakeCaptain(player.id, team)}
+                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30 transition-colors"
+                            >
+                              Make Captain
+                            </button>
+                          </>
+                        )}
+                        {player.isCaptain && (
+                          <span className="px-3 py-1.5 rounded-lg text-xs font-medium bg-yellow-500 text-black">
+                            Captain
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </Card>
+          )}
+
+          {/* Team Selector */}
+          <div className="flex gap-2 bg-secondary rounded-xl p-1">
+            <button
+              onClick={() => setActiveTeam("A")}
+              className={cn(
+                "flex-1 py-2 rounded-lg transition-colors font-medium text-sm",
+                activeTeam === "A" ? "bg-card text-primary" : "text-muted-foreground"
+              )}
+            >
+              Team A
+            </button>
+            <button
+              onClick={() => setActiveTeam("B")}
+              className={cn(
+                "flex-1 py-2 rounded-lg transition-colors font-medium text-sm",
+                activeTeam === "B" ? "bg-card text-primary" : "text-muted-foreground"
+              )}
+            >
+              Team B
+            </button>
+          </div>
+
           {/* Pitch View */}
           <Card className="bg-gradient-to-b from-green-800 to-green-700 border-none p-4 relative overflow-hidden">
+            {/* Locked Overlay */}
+            {isLineupLocked && (
+              <div className="absolute inset-0 bg-black/20 z-10 flex items-center justify-center">
+                <div className="bg-card/90 rounded-xl px-4 py-2 flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-yellow-500" />
+                  <span className="text-sm font-medium">Lineup Locked</span>
+                </div>
+              </div>
+            )}
+            
             {/* Pitch Markings */}
             <div className="absolute inset-4 border-2 border-white/30 rounded-lg" />
             <div className="absolute top-4 left-1/2 -translate-x-1/2 w-24 h-12 border-2 border-t-0 border-white/30 rounded-b-lg" />
@@ -473,26 +800,48 @@ export function HypeRoomScreen({ onBack }: HypeRoomScreenProps) {
             <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-white/30" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 border-2 border-white/30 rounded-full" />
 
-            {/* Team A (Bottom) */}
+            {/* Team Label */}
             <div className="relative h-56">
-              <p className="text-xs text-white/70 font-medium text-center mb-2">TEAM A</p>
-              {teamA.map((player, index) => {
-                const pos = positions[index] || positions[0]
+              <p className="text-xs text-white/70 font-medium text-center mb-2">
+                TEAM {activeTeam} - {selectedFormation.label}
+              </p>
+              {(activeTeam === "A" ? teamA : teamB).map((player, index) => {
+                const pos = selectedFormation.positions[index] || selectedFormation.positions[0]
+                if (player.isEmpty) return null
                 return (
                   <div
                     key={player.id}
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1"
+                    className={cn(
+                      "absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 cursor-pointer transition-transform",
+                      !isLineupLocked && "hover:scale-110"
+                    )}
                     style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+                    draggable={!isLineupLocked}
+                    onDragStart={() => setDraggedPlayer(player)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => {
+                      if (draggedPlayer && draggedPlayer.id !== player.id) {
+                        handleSwapPlayers(draggedPlayer, player)
+                      }
+                      setDraggedPlayer(null)
+                    }}
                   >
-                    <Avatar className={cn(
-                      "h-10 w-10 border-2",
-                      player.isYou ? "border-primary ring-2 ring-primary/50" : "border-white/50"
-                    )}>
-                      <AvatarImage src={player.avatar} />
-                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                        {player.name[0]}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                      <Avatar className={cn(
+                        "h-10 w-10 border-2",
+                        player.isYou ? "border-primary ring-2 ring-primary/50" : "border-white/50"
+                      )}>
+                        <AvatarImage src={player.avatar} />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                          {player.name[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      {player.isCaptain && (
+                        <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-0.5">
+                          <Crown className="w-3 h-3 text-black" />
+                        </div>
+                      )}
+                    </div>
                     <span className="text-[10px] text-white font-medium bg-black/40 px-1.5 py-0.5 rounded">
                       {player.name}
                     </span>
@@ -502,23 +851,41 @@ export function HypeRoomScreen({ onBack }: HypeRoomScreenProps) {
             </div>
           </Card>
 
-          {/* Team B */}
+          {/* Player List */}
           <section>
-            <p className="text-xs text-muted-foreground font-medium mb-3">TEAM B</p>
-            <div className="flex flex-wrap gap-3">
-              {teamB.map((player) => (
-                <div key={player.id} className="flex flex-col items-center gap-1">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs text-muted-foreground font-medium">TEAM {activeTeam} ROSTER</p>
+              {!isLineupLocked && (
+                <p className="text-xs text-primary">Drag to swap positions</p>
+              )}
+            </div>
+            <div className="grid grid-cols-5 gap-3">
+              {(activeTeam === "A" ? teamA : teamB).map((player) => (
+                <div 
+                  key={player.id} 
+                  className={cn(
+                    "flex flex-col items-center gap-1 p-2 rounded-xl transition-colors",
+                    !player.isEmpty && !isLineupLocked && "cursor-move hover:bg-secondary/50"
+                  )}
+                >
                   {player.isEmpty ? (
                     <div className="h-12 w-12 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
                       <span className="text-xs text-muted-foreground">?</span>
                     </div>
                   ) : (
-                    <Avatar className="h-12 w-12 border-2 border-border">
-                      <AvatarImage src={player.avatar} />
-                      <AvatarFallback>{player.name[0]}</AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                      <Avatar className="h-12 w-12 border-2 border-border">
+                        <AvatarImage src={player.avatar} />
+                        <AvatarFallback>{player.name[0]}</AvatarFallback>
+                      </Avatar>
+                      {player.isCaptain && (
+                        <div className="absolute -top-1 -right-1 bg-yellow-500 rounded-full p-0.5">
+                          <Crown className="w-3 h-3 text-black" />
+                        </div>
+                      )}
+                    </div>
                   )}
-                  <span className="text-xs text-muted-foreground">{player.name}</span>
+                  <span className="text-xs text-muted-foreground truncate w-full text-center">{player.name}</span>
                   {!player.isEmpty && (
                     <span className="text-[10px] bg-secondary px-1.5 py-0.5 rounded">{player.rating}</span>
                   )}
