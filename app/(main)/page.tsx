@@ -1,6 +1,7 @@
 "use client"
 
 import { HomeScreen } from "@/components/screens/home-screen"
+import { hasDemoSession, seedDemoSession } from "@/lib/demo-session"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
@@ -10,10 +11,10 @@ export default function Home() {
 
   useEffect(() => {
     setIsMounted(true)
-    // Simple check for onboarding - in a real app use cookies or a proper auth state
-    const hasSeenOnboarding = localStorage.getItem("onboarded")
-    if (!hasSeenOnboarding) {
-      router.push("/onboarding")
+
+    // Keep local development usable by ensuring a demo session always exists.
+    if (!hasDemoSession()) {
+      seedDemoSession()
     }
   }, [router])
 

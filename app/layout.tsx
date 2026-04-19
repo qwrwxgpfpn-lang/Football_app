@@ -1,10 +1,17 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Inter, Roboto_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+})
+
+const robotoMono = Roboto_Mono({
+  subsets: ['latin'],
+  variable: '--font-roboto-mono',
+})
 
 export const metadata: Metadata = {
   title: 'Footy App - Find, Book & Play Football',
@@ -36,7 +43,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark bg-background">
-      <body className="font-sans antialiased min-h-screen">
+      <body className={`${inter.variable} ${robotoMono.variable} font-sans antialiased min-h-screen`}>
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

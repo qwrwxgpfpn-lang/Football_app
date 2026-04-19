@@ -1,7 +1,10 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+@source "../app/**/*.{js,ts,jsx,tsx,mdx}";
+@source "../components/**/*.{js,ts,jsx,tsx,mdx}";
+@source "../lib/**/*.{js,ts,jsx,tsx,mdx}";
 
 :root {
   /* Dark sports theme - always dark */
@@ -83,8 +86,8 @@
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-roboto-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
