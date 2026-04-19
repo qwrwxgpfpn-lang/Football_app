@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 export default function Home() {
   const matches = [
@@ -19,10 +20,10 @@ export default function Home() {
             The ultimate 5-a-side booking platform. Book matches, track stats, and join the local league elite.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <button className="btn-primary">Book a Pitch</button>
-            <button className="btn-primary" style={{ background: 'transparent', color: '#fff', border: '1px solid #fff' }}>
+            <Link href="/dashboard" className="btn-primary">Book a Pitch</Link>
+            <Link href="/dashboard" className="btn-primary" style={{ background: 'transparent', color: '#fff', border: '1px solid #fff' }}>
               View Leagues
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -34,7 +35,7 @@ export default function Home() {
               <h2 style={{ fontSize: '2.5rem' }}>Upcoming <span className="gradient-text">Matches</span></h2>
               <p style={{ color: 'rgba(255,255,255,0.6)' }}>Join a game or organize your own squad.</p>
             </div>
-            <a href="#" style={{ color: 'var(--accent)', fontWeight: 'bold' }}>See All Matches &rarr;</a>
+            <Link href="/dashboard" style={{ color: 'var(--accent)', fontWeight: 'bold' }}>See All Matches &rarr;</Link>
           </div>
 
           <div className="booking-grid">
@@ -57,9 +58,9 @@ export default function Home() {
                         style={{ color: match.status === 'Full' ? '#ff4444' : 'var(--accent)' }}>
                     {match.status}
                   </span>
-                  <button className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }} disabled={match.status === 'Full'}>
+                  <Link href="/dashboard" className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', pointerEvents: match.status === 'Full' ? 'none' : 'auto', opacity: match.status === 'Full' ? 0.5 : 1 }}>
                     {match.status === 'Full' ? 'Closed' : 'Join Game'}
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))}
@@ -75,10 +76,11 @@ export default function Home() {
               Join over 10,000+ players managing their amateur football careers with Football 5 A Side. 
               The most advanced booking and tracking engine for the beautiful game.
             </p>
-            <button className="btn-primary" style={{ fontSize: '1.2rem', padding: '1.5rem 3rem' }}>Create Your Team</button>
+            <Link href="/dashboard" className="btn-primary" style={{ fontSize: '1.2rem', padding: '1.5rem 3rem' }}>Create Your Team</Link>
           </div>
         </div>
       </section>
+
 
       <footer className="section" style={{ borderTop: '1px solid var(--card-border)', padding: '4rem 0' }}>
         <div className="container" style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.5 }}>
